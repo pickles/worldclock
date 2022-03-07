@@ -1,0 +1,51 @@
+.WorldMap {
+    margin: 0 auto;
+    max-width: 1024px;
+    padding: 40px;
+}
+
+.MapWrap {
+    padding: 1px;
+    background-color: brown;
+    border-radius: 3px;
+    position: relative;
+}
+
+.MapInset {
+    padding-bottom: 50%;
+    background: url(https://momentjs.com/static/img/world.png) 50% 50%;
+    background-size: cover;
+    position: relative;
+}
+
+.MapInset span {
+    width: 4px;
+    height: 4px;
+    margin: -2px 0 0 -2px;
+    background: #fff;
+    position: absolute;
+    border-radius: 2px;
+    border: 1px solid #4e7cad;
+}
+
+.MapInset span.Active {
+    background: #4e7cad;
+}
+
+.MapInset .MapAxisX {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 1px solid rgba(78, 124, 173, 0.5);
+    width: 0;
+    transition: left 50ms ease-out;
+}
+
+.MapInset .MapAxisY {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px solid rgba(78, 124, 173, 0.5);
+    height: 0;
+    transition: top 50ms ease-out;
+}
