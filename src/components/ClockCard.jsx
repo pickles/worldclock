@@ -53,8 +53,25 @@ const ClockCard = ({
     }
   }
 
+  // 時間帯分類 (dawn/day/dusk/night)
+  const getPhaseClass = () => {
+    try {
+      const options = { timeZone: timezone, hour12: false, hour: '2-digit' }
+      const hourStr = currentTime.toLocaleTimeString('en-US', options).slice(0,2)
+      const hour = parseInt(hourStr, 10)
+      if (hour >= 4 && hour <= 6) return 'clock--dawn'
+      if (hour >= 7 && hour <= 16) return 'clock--day'
+      if (hour >= 17 && hour <= 19) return 'clock--dusk'
+      return 'clock--night'
+    } catch {
+      return ''
+    }
+  }
+
+  const phaseClass = getPhaseClass()
+
   return (
-    <div className="clock-card" data-timezone={timezone}>
+    <div className={`clock-card ${phaseClass}`} data-timezone={timezone}>
       <div className="clock-header">
         <h2 className="clock-title">{city}</h2>
         <span className="timezone-info">
@@ -63,11 +80,15 @@ const ClockCard = ({
       </div>
       
       <div className="time-display">
-        {formatTime()}
+        <span className="time-text" aria-label="現在時刻">
+          {formatTime()}
+        </span>
       </div>
       
       <div className="date-display">
-        {formatDate()}
+        <span className="date-text" aria-label="日付">
+          {formatDate()}
+        </span>
       </div>
 
       {isRemovable && (

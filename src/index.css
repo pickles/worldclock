@@ -1,25 +1,84 @@
+/* Global typography & design tokens */
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Light theme tokens */
+  --color-bg:#F5F7FA;
+  --color-surface:#FFFFFF;
+  --color-surface-alt:#EEF2F6;
+  --color-border:#D4DDE5;
+  --color-text:#1F2A33;
+  --color-text-muted:#5B6B78;
+  --color-text-invert:#FFFFFF;
+  --color-on-bright:#000000;
+  --color-on-dark:#F5FAFF;
+  --color-accent:#2F72FF;
+  --color-accent-hover:#1E5BDA;
+  --color-accent-soft:#E1EDFF;
+  --color-danger:#D63649;
+  --color-danger-hover:#B82132;
+  --color-danger-soft:#FBE5E8;
+  --color-focus-ring:#7DAAFF;
+
+  --card-radius: 20px;
+  --card-padding: 2rem;
+  --transition-fast: 120ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg:#0F141A;
+    --color-surface:#18212A;
+    --color-surface-alt:#22303C;
+    --color-border:#2E3C47;
+    --color-text:#E6ECF1;
+    --color-text-muted:#93A2AE;
+    --color-text-invert:#0F141A;
+  --color-on-bright:#000000;
+  --color-on-dark:#F7FBFF;
+    --color-accent:#5C95FF;
+    --color-accent-hover:#3E73E6;
+    --color-accent-soft:#1E3355;
+    --color-danger:#FF5F6E;
+    --color-danger-hover:#E64252;
+    --color-danger-soft:#432229;
+    --color-focus-ring:#5C95FF;
+  }
+}
+
+/* Manual dark theme override */
+[data-theme="dark"] {
+  --color-bg:#0F141A;
+  --color-surface:#18212A;
+  --color-surface-alt:#22303C;
+  --color-border:#2E3C47;
+  --color-text:#E6ECF1;
+  --color-text-muted:#93A2AE;
+  --color-text-invert:#0F141A;
+  --color-on-bright:#000000;
+  --color-on-dark:#F7FBFF;
+  --color-accent:#5C95FF;
+  --color-accent-hover:#3E73E6;
+  --color-accent-soft:#1E3355;
+  --color-danger:#FF5F6E;
+  --color-danger-hover:#E64252;
+  --color-danger-soft:#432229;
+  --color-focus-ring:#5C95FF;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 #root {
@@ -27,4 +86,11 @@ body {
   margin: 0;
   padding: 0;
   text-align: left;
+}
+
+/* Base focus style */
+*:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
