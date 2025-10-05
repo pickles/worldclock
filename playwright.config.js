@@ -5,6 +5,14 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
+  // 1) 個々のテストの最大実行時間 (ms)
+  timeout: 20_000,
+  // 2) 全テストラン全体の上限時間 (ms) - 3分に拡張（teardownタイムアウト緩和）
+  globalTimeout: 180_000,
+  // 3) expect() のデフォルト待機時間
+  expect: {
+    timeout: 5_000,
+  },
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -14,7 +22,8 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  // リポーター: シンプルな line のみ
+  reporter: 'line',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */

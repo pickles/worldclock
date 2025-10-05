@@ -2,7 +2,8 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    'header-max-length': [2, 'always', 50],
+  // 拡張: 長めの説明的ヘッダーを許容するため 50 -> 100 に拡大
+  'header-max-length': [2, 'always', 100],
     'type-enum': [
       2,
       'always',

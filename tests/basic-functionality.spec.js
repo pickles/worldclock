@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('世界時計アプリ - 基本機能', () => {
-  test('アプリケーションが正常に読み込まれる', async ({ page }) => {
+  test('@smoke アプリケーションが正常に読み込まれる', async ({ page }) => {
     await page.goto('/');
 
     // ページタイトルの確認

@@ -8,11 +8,14 @@
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "playwright test",
+  "test": "playwright test",
+  "test:fast": "playwright test tests/basic-functionality.spec.js --project=chromium -g @smoke",
+  "test:ci": "playwright test --reporter=line",
+  "test:fast:timeout": "powershell -Command \"$p=Start-Process npx -ArgumentList 'playwright','test','--project=chromium','-g','@smoke' -PassThru; if(-not $p.WaitForExit(120)){ $p.Kill(); exit 124 } ; exit $p.ExitCode\"",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report",
+  "test:report": "echo HTMLレポートは無効です (line reporter運用)",
     "prepare": "husky"
   },
   "dependencies": {
