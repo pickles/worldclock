@@ -21,6 +21,14 @@ body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 .date-display .date-text { /* Removed chip background per user request */ display:inline-block; padding:0; background:none; border-radius:0; box-shadow:none; letter-spacing:.02em; }
 .remove-btn { position:absolute; top:1rem; right:1rem; background:var(--color-danger); color:#fff; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .3s ease; opacity:.8; z-index:2; }
 .remove-btn:hover { opacity:1; transform:scale(1.1); background:var(--color-danger-hover); }
+.clock-actions { position:absolute; top:.6rem; right:.6rem; display:flex; gap:.4rem; align-items:flex-start; }
+.reorder-group { display:flex; flex-direction:column; gap:2px; }
+.reorder-btn { width:28px; height:20px; font-size:.65rem; border:1px solid var(--color-border); background:var(--color-surface-alt); color:var(--color-text); border-radius:4px; cursor:pointer; padding:0; line-height:1; display:flex; align-items:center; justify-content:center; transition:background .2s, transform .2s; }
+.reorder-btn:hover:not(:disabled) { background:var(--color-accent); color:#fff; }
+.reorder-btn:disabled { opacity:.35; cursor:not-allowed; }
+.reorder-btn:active:not(:disabled) { transform:translateY(1px); }
+.clock-card.dragging { opacity:.5; outline:2px dashed var(--color-accent); }
+.clock-card.drag-over { outline:2px solid var(--color-accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--color-accent) 40%, transparent); }
 /* Modal */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; z-index:1000; }
 .modal-content { background:var(--color-surface); color:var(--color-text); padding:2rem; border-radius:20px; width:90%; max-width:500px; box-shadow:0 20px 60px -10px rgba(0,0,0,.35); position:relative; animation:modalSlideIn .3s ease; border:1px solid var(--color-border); }

@@ -7,7 +7,15 @@ const ClockCard = ({
   description, 
   currentTime, 
   isRemovable = false, 
-  onRemove 
+  onRemove,
+  draggable = false,
+  onDragStart,
+  onDragEnter,
+  onDragOver,
+  onDragEnd,
+  onDrop,
+  isDragging = false,
+  isDragOver = false
 }) => {
   // タイムゾーンオフセットを取得
   // Helper: compute offset minutes for a given date/timezone using Intl parts (robust across DST)
@@ -125,7 +133,19 @@ const ClockCard = ({
   const phaseClass = getPhaseClass()
 
   return (
-    <div className={`clock-card ${phaseClass}`} data-timezone={timezone}>
+    <div
+      className={`clock-card ${phaseClass} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`}
+      data-timezone={timezone}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnter={onDragEnter}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+      onDrop={onDrop}
+      aria-grabbed={isDragging || undefined}
+      aria-dropeffect={isDragOver ? 'move' : undefined}
+      role="listitem"
+    >
       <div className="clock-header">
         <h2 className="clock-title">{city}</h2>
         <span className="timezone-info">
