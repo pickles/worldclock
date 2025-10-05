@@ -9,6 +9,7 @@ function App() {
   const [clocks, setClocks] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [loaded, setLoaded] = useState(false) // 初期ロード完了フラグ
 
   // タイムゾーンリストを取得
   const timezones = getTimezoneList()
@@ -27,17 +28,33 @@ function App() {
     try {
       const saved = localStorage.getItem('worldClockSettings')
       if (saved) {
-        setClocks(JSON.parse(saved))
+        try {
+          const parsed = JSON.parse(saved)
+          if (Array.isArray(parsed)) {
+            setClocks(parsed)
+          } else {
+            console.warn('保存フォーマットが不正のため初期化します')
+          }
+        } catch (e) {
+          console.warn('JSONパースに失敗したため初期化します')
+        }
       }
     } catch (error) {
       console.error('設定の読み込みでエラーが発生しました:', error)
+    } finally {
+      setLoaded(true)
     }
   }, [])
 
   // 設定をローカルストレージに保存
   useEffect(() => {
-    localStorage.setItem('worldClockSettings', JSON.stringify(clocks))
-  }, [clocks])
+    if (!loaded) return // 初期ロード完了前は空配列で上書きしない
+    try {
+      localStorage.setItem('worldClockSettings', JSON.stringify(clocks))
+    } catch (e) {
+      console.error('設定の保存に失敗しました:', e)
+    }
+  }, [clocks, loaded])
 
   // 時計を追加
   const addClock = (cityName) => {
