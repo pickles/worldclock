@@ -13,10 +13,24 @@ const ClockCard = ({
   const getTimezoneOffset = (tz) => {
     try {
       const now = new Date()
+      // Get UTC time reference
       const utc = new Date(now.getTime() + (now.getTimezoneOffset() * 60000))
-      const local = new Date(utc.toLocaleString("en-US", {timeZone: tz}))
-      const offset = (local.getTime() - utc.getTime()) / (1000 * 60 * 60)
-      return `UTC${offset >= 0 ? '+' : ''}${offset}`
+      // Local time in target timezone via locale conversion
+      const local = new Date(utc.toLocaleString('en-US', { timeZone: tz }))
+      let rawOffset = (local.getTime() - utc.getTime()) / (1000 * 60 * 60) // hours (can be fractional)
+
+      // Handle floating point precision (e.g. 5.499999999)
+      const sign = rawOffset >= 0 ? '+' : '-'
+      rawOffset = Math.abs(rawOffset)
+      let hours = Math.floor(rawOffset)
+      let minutes = Math.round((rawOffset - hours) * 60)
+      if (minutes === 60) { // normalize overflow
+        hours += 1
+        minutes = 0
+      }
+      const hh = String(hours).padStart(2, '0')
+      const mm = String(minutes).padStart(2, '0')
+      return `UTC${sign}${hh}:${mm}`
     } catch (e) {
       return 'UTC'
     }
