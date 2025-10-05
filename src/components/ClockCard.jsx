@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useLayoutEffect } from 'react'
 import { X } from 'lucide-react'
 
 const ClockCard = ({ 
@@ -15,8 +15,30 @@ const ClockCard = ({
   onDragEnd,
   onDrop,
   isDragging = false,
-  isDragOver = false
+  isDragOver = false,
+  compact = false
 }) => {
+  // Compactモード時の幅オーバー対策: テキストをスケールして収める
+  const timeRef = useRef(null)
+  useLayoutEffect(() => {
+    if (!compact) {
+      if (timeRef.current) timeRef.current.style.transform = 'scale(1)'
+      return
+    }
+    const el = timeRef.current
+    if (!el) return
+    const parent = el.parentElement
+    if (!parent) return
+    // Reset scale before measuring
+  el.style.transform = 'scale(1)'
+  el.style.transformOrigin = 'center center'
+    const parentWidth = parent.clientWidth
+    const contentWidth = el.scrollWidth
+    if (contentWidth > parentWidth && contentWidth > 0) {
+      const scale = parentWidth / contentWidth
+      el.style.transform = `scale(${scale})`
+    }
+  }, [currentTime, compact])
   // タイムゾーンオフセットを取得
   // Helper: compute offset minutes for a given date/timezone using Intl parts (robust across DST)
   const getOffsetMinutes = (date, tz) => {
@@ -84,7 +106,7 @@ const ClockCard = ({
     }
   }
 
-  // 時刻フォーマット
+  // 時刻フォーマット (常に HH:MM:SS を返す)
   const formatTime = () => {
     try {
       const options = {
@@ -147,14 +169,19 @@ const ClockCard = ({
       role="listitem"
     >
       <div className="clock-header">
-        <h2 className="clock-title">{city}</h2>
+        <div className="title-block">
+          <h2 className="clock-title">{city}</h2>
+          <span className="timezone-inline">
+            {description || getTimezoneOffset(timezone)}
+          </span>
+        </div>
         <span className="timezone-info">
           {description || getTimezoneOffset(timezone)}
         </span>
       </div>
       
       <div className="time-display">
-        <span className="time-text" aria-label="現在時刻">
+        <span className="time-text time-fit" ref={timeRef} aria-label="現在時刻">
           {formatTime()}
         </span>
       </div>

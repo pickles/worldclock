@@ -13,6 +13,7 @@ function App() {
   const [draggingId, setDraggingId] = useState(null)
   const [dragOverId, setDragOverId] = useState(null)
   const dragFromIndexRef = useRef(null)
+  const [compact, setCompact] = useState(false)
 
   // タイムゾーンリストを取得
   const timezones = getTimezoneList()
@@ -42,6 +43,8 @@ function App() {
           console.warn('JSONパースに失敗したため初期化します')
         }
       }
+      const compactPref = localStorage.getItem('worldClockCompactMode')
+      if (compactPref === 'true') setCompact(true)
     } catch (error) {
       console.error('設定の読み込みでエラーが発生しました:', error)
     } finally {
@@ -58,6 +61,14 @@ function App() {
       console.error('設定の保存に失敗しました:', e)
     }
   }, [clocks, loaded])
+
+  // コンパクトモード保存
+  useEffect(() => {
+    if (!loaded) return
+    try { localStorage.setItem('worldClockCompactMode', compact ? 'true' : 'false') } catch {}
+  }, [compact, loaded])
+
+  const toggleCompact = () => setCompact(c => !c)
 
   // 時計を追加
   const addClock = (cityName) => {
@@ -143,7 +154,7 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app ${compact ? 'compact-mode' : ''}`}> 
       <header className="header">
         <h1 className="title">
           <Globe className="globe-icon" />
@@ -156,6 +167,12 @@ function App() {
           <Plus size={20} />
           時計を追加
         </button>
+        <button
+          className={`compact-toggle ${compact ? 'active' : ''}`}
+          onClick={toggleCompact}
+          aria-pressed={compact}
+          aria-label="コンパクトモード切り替え"
+        >{compact ? '通常表示' : 'コンパクト'}</button>
       </header>
 
       <main className="main">
@@ -167,6 +184,7 @@ function App() {
             description="協定世界時"
             currentTime={currentTime}
             isRemovable={false}
+            compact={compact}
           />
           
           {/* 追加された時計 */}
@@ -186,6 +204,7 @@ function App() {
               onDragEnd={handleDragEnd}
               isDragging={draggingId === clock.id}
               isDragOver={dragOverId === clock.id}
+              compact={compact}
             />
           ))}
         </div>
