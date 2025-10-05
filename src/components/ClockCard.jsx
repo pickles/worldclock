@@ -10,27 +10,67 @@ const ClockCard = ({
   onRemove 
 }) => {
   // タイムゾーンオフセットを取得
+  // Helper: compute offset minutes for a given date/timezone using Intl parts (robust across DST)
+  const getOffsetMinutes = (date, tz) => {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    })
+    const parts = dtf.formatToParts(date)
+    const map = {}
+    for (const p of parts) { if (p.type !== 'literal') map[p.type] = p.value }
+    const syntheticUTC = Date.UTC(
+      Number(map.year),
+      Number(map.month) - 1,
+      Number(map.day),
+      Number(map.hour),
+      Number(map.minute),
+      Number(map.second)
+    )
+    let offsetMinutes = Math.round((syntheticUTC - date.getTime()) / 60000)
+    if (offsetMinutes === 1440 || offsetMinutes === -1440) offsetMinutes = 0
+    return offsetMinutes
+  }
+
+  const formatOffset = (offsetMinutes) => {
+    const sign = offsetMinutes >= 0 ? '+' : '-'
+    const abs = Math.abs(offsetMinutes)
+    const h = Math.floor(abs / 60)
+    const m = abs % 60
+    return `UTC${sign}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`
+  }
+
   const getTimezoneOffset = (tz) => {
     try {
       const now = new Date()
-      // Get UTC time reference
-      const utc = new Date(now.getTime() + (now.getTimezoneOffset() * 60000))
-      // Local time in target timezone via locale conversion
-      const local = new Date(utc.toLocaleString('en-US', { timeZone: tz }))
-      let rawOffset = (local.getTime() - utc.getTime()) / (1000 * 60 * 60) // hours (can be fractional)
+      const current = getOffsetMinutes(now, tz)
+      // Sample Jan 1 and Jul 1 to infer standard offset (works for both hemispheres)
+      const year = now.getUTCFullYear()
+      const jan = new Date(Date.UTC(year, 0, 1, 12, 0, 0)) // midday to avoid edge cases
+      const jul = new Date(Date.UTC(year, 6, 1, 12, 0, 0))
+      const offJan = getOffsetMinutes(jan, tz)
+      const offJul = getOffsetMinutes(jul, tz)
 
-      // Handle floating point precision (e.g. 5.499999999)
-      const sign = rawOffset >= 0 ? '+' : '-'
-      rawOffset = Math.abs(rawOffset)
-      let hours = Math.floor(rawOffset)
-      let minutes = Math.round((rawOffset - hours) * 60)
-      if (minutes === 60) { // normalize overflow
-        hours += 1
-        minutes = 0
+      let standard = offJan
+      if (offJan !== offJul) {
+        // Determine which is standard: standard + 60 == DST (DST shifts +1h local time)
+        if (offJan + 60 === offJul) {
+          standard = offJan
+        } else if (offJul + 60 === offJan) {
+            standard = offJul
+        } else {
+          // Fallback: pick the one whose absolute value is farther from zero for negative zones, else nearer for positive
+          // but this is rare; keep offJan as default.
+        }
       }
-      const hh = String(hours).padStart(2, '0')
-      const mm = String(minutes).padStart(2, '0')
-      return `UTC${sign}${hh}:${mm}`
+
+      const isDST = current !== standard
+      if (isDST) {
+        // Show standard primary per user expectation (e.g., LA => UTC-08:00) and annotate current DST
+        return `${formatOffset(standard)} (DST: ${formatOffset(current)})`
+      }
+      return formatOffset(standard)
     } catch (e) {
       return 'UTC'
     }
