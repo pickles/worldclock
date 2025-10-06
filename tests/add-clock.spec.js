@@ -7,7 +7,7 @@ test.describe('世界時計アプリ - 時計追加機能', () => {
 
   test('時計追加モーダルが正しく開閉される', async ({ page }) => {
     // モーダルが初期状態では表示されていない
-    await expect(page.locator('.modal-overlay')).not.toBeVisible();
+    await expect(page.locator('.modal-overlay')).toHaveCount(0);
 
     // 時計追加ボタンをクリック
     await page.click('text=時計を追加');
@@ -31,13 +31,15 @@ test.describe('世界時計アプリ - 時計追加機能', () => {
 
     // 候補が表示される
     await expect(page.locator('.suggestions')).toBeVisible();
-    await expect(page.locator('.suggestion-item')).toContainText('Tokyo');
+    const firstSuggestion = page.locator('.suggestion-item').first();
+    await expect(firstSuggestion).toContainText('Tokyo');
+    await expect(firstSuggestion.locator('.suggestion-subtext')).toContainText('Asia/Tokyo');
 
     // 候補をクリックして選択
     await page.click('.suggestion-item:has-text("Tokyo")');
 
     // 入力フィールドに選択した都市名が入る
-    await expect(page.locator('.city-input')).toHaveValue('Tokyo');
+    await expect(page.locator('.city-input')).toHaveValue(/Tokyo/);
     await expect(page.locator('.suggestions')).not.toBeVisible();
   });
 
@@ -119,7 +121,7 @@ test.describe('世界時計アプリ - 時計追加機能', () => {
     await page.click('.submit-btn');
 
     // エラーメッセージが表示される
-    await expect(page.locator('.error-message')).toContainText('対応していない都市です');
+  await expect(page.locator('.error-message')).toContainText('対応していない都市です');
 
     // モーダルは開いたまま
     await expect(page.locator('.modal-overlay')).toBeVisible();

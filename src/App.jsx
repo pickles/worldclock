@@ -1,9 +1,62 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Plus, X, Globe } from 'lucide-react'
+import { Plus, Globe } from 'lucide-react'
 import ClockCard from './components/ClockCard'
 import AddClockModal from './components/AddClockModal'
-import { getTimezoneList } from './utils/timezones'
+import { resolveCityTimezone, getCityOptionById, getCityRegion } from './utils/timezones'
 import './App.css'
+
+const createClockId = () => Date.now() + Math.floor(Math.random() * 1000)
+
+const buildClockData = (option, overrides = {}) => {
+  const base = {
+    id: overrides.id ?? createClockId(),
+    cityId: option?.id ?? overrides.cityId ?? null,
+    city: option?.city ?? overrides.city ?? '',
+    label: option?.label ?? overrides.label ?? option?.city ?? overrides.city ?? '',
+    country: option?.country ?? overrides.country ?? '',
+    timezone: option?.timezone ?? overrides.timezone ?? 'UTC',
+    iso2: option?.iso2 ?? overrides.iso2 ?? null
+  }
+
+  return {
+    ...base,
+    region: overrides.region ?? getCityRegion(option || base.iso2 || base.country)
+  }
+}
+
+const normalizeSavedClock = (entry) => {
+  if (!entry) return null
+
+  let option = null
+  if (entry.cityId) {
+    option = getCityOptionById(entry.cityId)
+  }
+  if (!option && entry.label) {
+    option = resolveCityTimezone(entry.label)
+  }
+  if (!option && entry.city) {
+    option = resolveCityTimezone(entry.city)
+  }
+
+  if (option) {
+    return buildClockData(option, { id: entry.id ?? createClockId() })
+  }
+
+  if (entry.city && entry.timezone) {
+    return buildClockData(null, {
+      id: entry.id ?? createClockId(),
+      cityId: entry.cityId ?? null,
+      city: entry.city,
+      label: entry.label ?? entry.city,
+      country: entry.country ?? '',
+      timezone: entry.timezone,
+      iso2: entry.iso2 ?? null,
+      region: entry.region ?? getCityRegion(entry.iso2 ?? entry.country ?? null)
+    })
+  }
+
+  return null
+}
 
 function App() {
   const [clocks, setClocks] = useState([])
@@ -14,9 +67,6 @@ function App() {
   const [dragOverId, setDragOverId] = useState(null)
   const dragFromIndexRef = useRef(null)
   const [compact, setCompact] = useState(false)
-
-  // タイムゾーンリストを取得
-  const timezones = getTimezoneList()
 
   // 時刻更新
   useEffect(() => {
@@ -35,7 +85,10 @@ function App() {
         try {
           const parsed = JSON.parse(saved)
           if (Array.isArray(parsed)) {
-            setClocks(parsed)
+            const normalized = parsed
+              .map((entry) => normalizeSavedClock(entry))
+              .filter(Boolean)
+            setClocks(normalized)
           } else {
             console.warn('保存フォーマットが不正のため初期化します')
           }
@@ -71,34 +124,29 @@ function App() {
   const toggleCompact = () => setCompact(c => !c)
 
   // 時計を追加
-  const addClock = (cityName) => {
-    // 完全一致または部分一致を探す
-    let timezone = timezones[cityName]
-    if (!timezone) {
-      const matches = Object.keys(timezones).filter(city => 
-        city.toLowerCase().includes(cityName.toLowerCase())
-      )
-      if (matches.length > 0) {
-        timezone = timezones[matches[0]]
-        cityName = matches[0] // 正式な都市名を使用
-      }
+  const addClock = ({ inputValue, suggestionId }) => {
+    const trimmed = (inputValue || '').trim()
+    if (!trimmed) {
+      throw new Error('都市名を入力してください')
     }
 
-    if (!timezone) {
-      throw new Error('対応していない都市です。候補から選択してください。')
+    let option = null
+    if (suggestionId) {
+      option = getCityOptionById(suggestionId)
+    }
+    if (!option) {
+      option = resolveCityTimezone(trimmed)
     }
 
-    // 既に追加されているかチェック
-    if (clocks.some(clock => clock.city === cityName)) {
-      throw new Error('この都市の時計は既に追加されています。')
+    if (!option) {
+      throw new Error('対応していない都市です')
     }
 
-    const clockData = {
-      id: Date.now(),
-      city: cityName,
-      timezone: timezone
+    if (clocks.some(clock => clock.cityId === option.id)) {
+      throw new Error('この都市の時計は既に追加されています')
     }
 
+    const clockData = buildClockData(option)
     setClocks(prev => [...prev, clockData])
   }
 
@@ -193,6 +241,7 @@ function App() {
               key={clock.id}
               city={clock.city}
               timezone={clock.timezone}
+              description={clock.region || clock.country}
               currentTime={currentTime}
               isRemovable={true}
               onRemove={() => removeClock(clock.id)}
@@ -215,7 +264,6 @@ function App() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddClock={addClock}
-        timezones={timezones}
       />
     </div>
   )
